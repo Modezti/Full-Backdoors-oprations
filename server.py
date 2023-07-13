@@ -24,7 +24,6 @@ def receive_message(client_socket):
     message_len = struct.unpack("!I", get_data_len)[0]
     print("length message client is: ", message_len)
 
-    # envoyer la longeur du message    message = b""
     while len(message) < message_len:
         chunk = message_len - len(message)
         chunk_size = bufsize if chunk > bufsize else chunk
